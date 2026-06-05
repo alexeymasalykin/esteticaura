@@ -1,28 +1,33 @@
 import * as THREE from 'three'
 
-// Hero object: glass/water droplet. Studio-grade params land in Phase C;
-// these are the working baseline carried over from MorphShapes.
+// Hero object: expensive glass/water droplet (reference board §2.1).
+// Requires scene.environment (set by Environment) — transmission needs an env map.
 export default class Droplet {
     constructor(experience) {
         this.scene = experience.scene
 
         const geometry = new THREE.SphereGeometry(1, 64, 64)
-        const material = new THREE.MeshPhysicalMaterial({
+        this.material = new THREE.MeshPhysicalMaterial({
             color: '#ffffff',
-            metalness: 0.1,
-            roughness: 0,
-            transmission: 0.9,
-            thickness: 1,
+            transmission: 1,
+            thickness: 0.5,        // required for refraction at this object scale
+            roughness: 0.05,       // 0–0.15 polished glass; 0.2–0.6 pixelates — avoid
+            ior: 1.33,             // water
             clearcoat: 1,
-            clearcoatRoughness: 0
+            clearcoatRoughness: 0,
+            iridescence: 0.2       // faint nacre
         })
-        this.mesh = new THREE.Mesh(geometry, material)
+        this.mesh = new THREE.Mesh(geometry, this.material)
         this.mesh.position.set(0, 0, 0)
         this.scene.add(this.mesh)
     }
 
     update(elapsedTime) {
         if (!this.mesh.visible) return
+        // Pause self-animation while the scroll morph shrinks us (scale.x < ~1):
+        // prevents the breathing scale.y from fighting the morph tween (Phase A carry-forward).
+        if (this.mesh.scale.x < 0.99) return
+
         this.mesh.rotation.y = elapsedTime * 0.2
         this.mesh.position.y = Math.sin(elapsedTime) * 0.2
         this.mesh.scale.y = 1 + Math.sin(elapsedTime * 2) * 0.1
