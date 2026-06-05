@@ -36,7 +36,11 @@ export default class Nav {
 
     setupActiveHighlight() {
         const sections = this.navLinks
-            .map((link) => document.querySelector(link.getAttribute('href')))
+            .map((link) => {
+                const href = link.getAttribute('href')
+                // Skip bare "#" links (e.g. footer policy placeholder): querySelector('#') throws.
+                return href && href.length > 1 ? document.querySelector(href) : null
+            })
             .filter(Boolean)
         if (!sections.length || !('IntersectionObserver' in window)) return
 
