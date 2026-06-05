@@ -2,6 +2,10 @@ import gsap from 'gsap'
 
 export default class Cursor {
     constructor() {
+        // Desktop-only: тач-устройства не имеют курсора (фикс «висящего» курсора в углу).
+        this.enabled = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+        if (!this.enabled) return
+
         this.cursor = document.createElement('div')
         this.cursor.classList.add('custom-cursor')
         document.body.appendChild(this.cursor)
