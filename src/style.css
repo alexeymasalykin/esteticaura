@@ -587,3 +587,31 @@ a {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
 }
+
+/* ===== Static poster (shown when WebGL is not loaded: mobile / reduced-motion / no GPU) ===== */
+.scene-poster {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: none;
+    background:
+        radial-gradient(ellipse 60% 50% at 50% 38%, rgba(212, 175, 55, .22), rgba(212, 175, 55, .05) 42%, transparent 70%),
+        radial-gradient(circle at 50% 42%, rgba(247, 231, 206, .10), transparent 55%),
+        var(--bg);
+}
+.scene-poster::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .35;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+}
+
+body.no-3d .scene-poster { display: block; }
+body.no-3d canvas.webgl { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .scene-poster::after { display: none; } /* keep it perfectly still */
+}
