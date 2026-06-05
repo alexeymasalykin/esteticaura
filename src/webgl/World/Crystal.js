@@ -1,40 +1,72 @@
 import * as THREE from 'three'
 
-// Scroll-target object: a polished GOLD brilliant-cut gem (pavilion + crown).
-// NO transmission (renders opaque through bloom / on weak GPUs). The premium look comes
-// from a sharp metallic mirror (low roughness) reflecting the golden-noir environment +
-// flat-shaded facets + slow organic motion. The old "cheap 90s" look was flat color with
-// no reflections + a fast uniform spin — both fixed here.
+// Scroll-target object: a many-faceted round BRILLIANT-CUT diamond.
+// Custom geometry: flat table + two crown facet rings + girdle + two pavilion rings to a
+// culet (16-fold) → reads like a real diamond, not a chunky 8-sided cone. Bright silvery
+// metal (no transmission — that renders opaque under bloom / on weak GPUs); the golden-noir
+// env paints warm sparkle on the facets. DoubleSide shows inner facet reflections (diamond fire).
 export default class Crystal {
     constructor(experience) {
         this.scene = experience.scene
 
         this.material = new THREE.MeshPhysicalMaterial({
-            color: '#E8C457',       // brighter gold base so shadowed facets still read gold
-            metalness: 1,
-            roughness: 0.28,        // softer facets — even gold sheen, less blown highlight
+            color: '#EBEDF2',       // near-colourless diamond; env tints it warm
+            metalness: 0.9,
+            roughness: 0.12,        // softer facets — sparkle without blown-white blobs
             flatShading: true,
-            clearcoat: 0.5,
-            clearcoatRoughness: 0.1,
-            envMapIntensity: 1.3
+            clearcoat: 1,
+            clearcoatRoughness: 0.04,
+            envMapIntensity: 1.8,
+            side: THREE.DoubleSide
         })
 
-        this.mesh = new THREE.Group()
-
-        // Pavilion: 8-sided cone, apex pointing down; girdle (radius 1) at y = 0.
-        const pavilion = new THREE.Mesh(new THREE.ConeGeometry(1, 1.3, 8), this.material)
-        pavilion.rotation.x = Math.PI
-        pavilion.position.y = -0.65
-        this.mesh.add(pavilion)
-
-        // Crown: truncated 8-sided cone with a flat table on top; bottom (girdle) at y = 0.
-        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 1, 0.5, 8), this.material)
-        crown.position.y = 0.25
-        this.mesh.add(crown)
-
+        this.mesh = new THREE.Mesh(this.buildBrilliantGeometry(), this.material)
         this.mesh.position.set(0, 0, 0)
         this.mesh.scale.set(0, 0, 0)   // invisible until the morph scales it in
         this.scene.add(this.mesh)
+    }
+
+    // Parametric round brilliant cut (N-fold). Rings of vertices stacked by height/radius,
+    // stitched into facet bands. flatShading on the material makes every facet read sharp.
+    buildBrilliantGeometry() {
+        const N = 16
+        const TWO_PI = Math.PI * 2
+        const verts = []
+        const ring = (r, y) => {
+            const start = verts.length / 3
+            for (let i = 0; i < N; i++) {
+                const a = (i / N) * TWO_PI
+                verts.push(Math.cos(a) * r, y, Math.sin(a) * r)
+            }
+            return start
+        }
+
+        const tableCenter = verts.length / 3; verts.push(0, 0.42, 0)
+        const T = ring(0.50, 0.42)   // table edge
+        const B = ring(0.80, 0.24)   // crown bezel
+        const G = ring(1.00, 0.00)   // girdle (widest)
+        const P = ring(0.55, -0.45)  // pavilion mid
+        const culet = verts.length / 3; verts.push(0, -0.95, 0)
+
+        const idx = []
+        const nx = (i) => (i + 1) % N
+        const band = (A, Bn) => {
+            for (let i = 0; i < N; i++) {
+                idx.push(A + i, Bn + i, Bn + nx(i))
+                idx.push(A + i, Bn + nx(i), A + nx(i))
+            }
+        }
+        for (let i = 0; i < N; i++) idx.push(tableCenter, T + i, T + nx(i)) // table cap
+        band(T, B)                                                          // crown row 1
+        band(B, G)                                                          // crown row 2
+        band(G, P)                                                          // pavilion row 1
+        for (let i = 0; i < N; i++) idx.push(P + i, culet, P + nx(i))       // pavilion tip
+
+        const geometry = new THREE.BufferGeometry()
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3))
+        geometry.setIndex(idx)
+        geometry.computeVertexNormals()
+        return geometry
     }
 
     update(elapsedTime) {
