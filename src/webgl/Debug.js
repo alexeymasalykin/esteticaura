@@ -23,15 +23,10 @@ export default class Debug {
             bf.add(postProcessing.bloomPass, 'threshold', 0, 1, 0.01)
         }
 
-        const df = gui.addFolder('Droplet')
-        df.add(world.droplet.material, 'roughness', 0, 0.3, 0.005)
-        df.add(world.droplet.material, 'transmission', 0, 1, 0.01)
-        df.add(world.droplet.material, 'ior', 1, 2.333, 0.01)
-        df.add(world.droplet.material, 'iridescence', 0, 1, 0.01)
-
         const cf = gui.addFolder('Crystal')
-        cf.add(world.crystal.material, 'roughness', 0, 0.5, 0.005)
+        cf.add(world.crystal.material, 'roughness', 0, 0.6, 0.005)
         cf.add(world.crystal.material, 'metalness', 0, 1, 0.01)
         cf.add(world.crystal.material, 'envMapIntensity', 0, 3, 0.05)
+        cf.add(world.crystal.material, 'clearcoat', 0, 1, 0.01)
     }
 }
