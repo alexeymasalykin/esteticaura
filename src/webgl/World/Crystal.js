@@ -1,18 +1,27 @@
 import * as THREE from 'three'
 
-// Scroll-target object: faceted brilliant-cut gem (pavilion + crown), gold metal.
-// A Group of two flat-shaded cones reads as a real cut gemstone (vs. a plain d20).
-// Starts at scale 0 (invisible), scaled in by the morph — fully reversible on scroll-up.
+// Scroll-target object: a transparent brilliant-cut DIAMOND (pavilion + crown).
+// Clear refractive glass with a high IOR + gold attenuation → it refracts the golden-noir
+// environment ("golden diamond"). Flat-shaded facets give per-face sparkle. Slow, organic
+// motion (not a uniform screensaver spin). Scale 0 until the morph scales it in (reversible).
 export default class Crystal {
     constructor(experience) {
         this.scene = experience.scene
 
         this.material = new THREE.MeshPhysicalMaterial({
-            color: '#F7E7CE',      // champagne base; env map paints the gold reflections
-            metalness: 1,
-            roughness: 0.15,
-            flatShading: true,     // sharp facets
-            envMapIntensity: 1.4
+            color: '#ffffff',
+            metalness: 0,
+            roughness: 0.0,
+            transmission: 1,
+            thickness: 1.0,
+            ior: 2.2,                      // diamond-like → strong refraction & sparkle
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            flatShading: true,             // sharp facets refract per-face
+            iridescence: 0.3,              // a hint of fire/dispersion
+            envMapIntensity: 1.5,
+            attenuationColor: '#D4AF37',   // refracted light picks up gold → golden diamond
+            attenuationDistance: 1.2
         })
 
         this.mesh = new THREE.Group()
@@ -34,7 +43,8 @@ export default class Crystal {
     }
 
     update(elapsedTime) {
-        this.mesh.rotation.y = elapsedTime * 0.3
-        this.mesh.rotation.x = elapsedTime * 0.15
+        // Slow, refined rotation + gentle sway — avoids the cheap uniform-spin look.
+        this.mesh.rotation.y = elapsedTime * 0.12
+        this.mesh.rotation.z = Math.sin(elapsedTime * 0.5) * 0.08
     }
 }
