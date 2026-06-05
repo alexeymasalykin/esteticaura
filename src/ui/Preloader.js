@@ -3,7 +3,6 @@ import gsap from 'gsap'
 export default class Preloader {
     constructor(experience) {
         this.experience = experience
-        this.resources = this.experience.resources
 
         this.overlay = document.createElement('div')
         this.overlay.classList.add('preloader')
@@ -19,16 +18,19 @@ export default class Preloader {
 
         this.addStyles()
 
-        this.resources.on('ready', () => {
+        // World is built synchronously — experience may already be ready.
+        if (this.experience.ready) {
             this.hide()
-        })
+        } else {
+            window.addEventListener('experience-ready', () => this.hide(), { once: true })
+        }
 
-        // Fallback
+        // Safety fallback in case the ready signal never fires.
         setTimeout(() => {
             if (document.querySelector('.preloader')) {
                 this.hide()
             }
-        }, 5000)
+        }, 4000)
     }
 
 

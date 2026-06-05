@@ -1,67 +1,50 @@
-import * as THREE from 'three'
-import Emblem from './Emblem.js'
+import Environment from '../Environment.js'
 import Particles from './Particles.js'
-import Lights from './Lights.js'
-import MorphShapes from './MorphShapes.js'
+import Droplet from './Droplet.js'
+import Crystal from './Crystal.js'
 import gsap from 'gsap'
 
 export default class World {
     constructor(experience) {
         this.experience = experience
         this.scene = this.experience.scene
-        this.resources = this.experience.resources
 
-        // Setup
-        this.lights = new Lights(this.experience)
-        this.emblem = new Emblem(this.experience)
+        // Environment first — sets scene.environment used by PBR materials.
+        this.environment = new Environment(this.experience)
         this.particles = new Particles(this.experience)
-        this.morphShapes = new MorphShapes(this.experience)
-
-        // Debug Cube (Red) - To verify 3D rendering
-        this.debugCube = new THREE.Mesh(
-            new THREE.BoxGeometry(0.5, 0.5, 0.5),
-            new THREE.MeshBasicMaterial({ color: 'red', wireframe: true })
-        )
-        this.debugCube.position.set(2, 0, 0)
-        this.scene.add(this.debugCube)
+        this.droplet = new Droplet(this.experience)
+        this.crystal = new Crystal(this.experience)
 
         this.setupScrollAnimations()
     }
 
-    update(elapsedTime, deltaTime) {
-        if (this.emblem) this.emblem.update(elapsedTime)
+    update(elapsedTime) {
+        if (this.droplet) this.droplet.update(elapsedTime)
+        if (this.crystal) this.crystal.update(elapsedTime)
         if (this.particles) this.particles.update(elapsedTime)
-        if (this.morphShapes) this.morphShapes.update(elapsedTime)
-
-        if (this.debugCube) {
-            this.debugCube.rotation.x = elapsedTime
-            this.debugCube.rotation.y = elapsedTime
-        }
     }
 
     setupScrollAnimations() {
         const tl = gsap.timeline({
             scrollTrigger: {
-                trigger: "body",
-                start: "top top",
-                end: "bottom bottom",
+                trigger: 'body',
+                start: 'top top',
+                end: 'bottom bottom',
                 scrub: 1
             }
         })
 
-        // Hero -> About (Emblem fades out, Drop fades in)
-        tl.to(this.emblem.mesh.material, { opacity: 0, duration: 1 }, 0)
-        tl.to(this.emblem.mesh.scale, { x: 0, y: 0, duration: 1 }, 0)
+        // Hero -> Services: droplet shrinks out, crystal scales in.
+        tl.to(this.droplet.mesh.scale, { x: 0, y: 0, z: 0, duration: 1 }, 1)
+        tl.call(() => {
+            this.droplet.mesh.visible = false
+            this.crystal.mesh.visible = true
+        }, null, 1.5)
+        tl.fromTo(this.crystal.mesh.scale,
+            { x: 0, y: 0, z: 0 },
+            { x: 1.5, y: 1.5, z: 1.5, duration: 1 }, 1.5)
 
-        tl.call(() => { this.morphShapes.drop.visible = true }, null, 0.5)
-        tl.fromTo(this.morphShapes.drop.scale, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1, duration: 1 }, 0.5)
-
-        // About -> Services (Drop -> Crystal)
-        tl.to(this.morphShapes.drop.scale, { x: 0, y: 0, z: 0, duration: 1 }, 2)
-        tl.call(() => { this.morphShapes.drop.visible = false; this.morphShapes.crystal.visible = true }, null, 2.5)
-        tl.fromTo(this.morphShapes.crystal.scale, { x: 0, y: 0, z: 0 }, { x: 1.5, y: 1.5, z: 1.5, duration: 1 }, 2.5)
-
-        // Move Camera slightly
+        // Subtle camera dolly across the page.
         tl.to(this.experience.camera.position, { z: 4, duration: 4 }, 0)
     }
 }

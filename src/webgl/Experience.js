@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Resources from './Resources.js'
 import World from './World/World.js'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -10,8 +9,8 @@ export default class Experience {
     constructor(canvas) {
         window.experience = this
         this.canvas = canvas
+        this.ready = false
 
-        // Setup
         this.sizes = {
             width: window.innerWidth,
             height: window.innerHeight,
@@ -36,12 +35,9 @@ export default class Experience {
         this.renderer.toneMapping = THREE.ReinhardToneMapping
         this.renderer.toneMappingExposure = 1.5
 
-        // Scroll
         this.scrollY = window.scrollY
-        this.scrollX = 0
         this.cursor = { x: 0, y: 0 }
 
-        // Events
         window.addEventListener('resize', () => this.resize())
         window.addEventListener('mousemove', (e) => {
             this.cursor.x = e.clientX / this.sizes.width - 0.5
@@ -51,16 +47,12 @@ export default class Experience {
             this.scrollY = window.scrollY
         })
 
-        // World
-        this.resources = new Resources([
-            { name: 'logo', type: 'texture', path: '/logo.jpg' }
-        ])
+        // No external assets to load anymore — build the world synchronously.
+        this.world = new World(this)
 
-        this.resources.on('ready', () => {
-            this.world = new World(this)
-        })
+        this.ready = true
+        window.dispatchEvent(new Event('experience-ready'))
 
-        // Loop
         this.clock = new THREE.Clock()
         this.tick()
     }
@@ -79,15 +71,13 @@ export default class Experience {
 
     tick() {
         const elapsedTime = this.clock.getElapsedTime()
-        const deltaTime = this.clock.getDelta()
 
         if (this.world) {
-            this.world.update(elapsedTime, deltaTime)
+            this.world.update(elapsedTime)
         }
 
-        // Parallax
         const parallaxX = this.cursor.x * 0.5
-        const parallaxY = - this.cursor.y * 0.5
+        const parallaxY = -this.cursor.y * 0.5
         this.camera.position.x += (parallaxX - this.camera.position.x) * 0.05
         this.camera.position.y += (parallaxY - this.camera.position.y) * 0.05
 
