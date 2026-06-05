@@ -1,8 +1,8 @@
 import * as THREE from 'three'
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 
-// Procedural image-based lighting (no HDRI file) + key/fill lights.
-// Gives real reflections to the glass droplet and gold crystal.
+// Procedural golden-noir image-based lighting (no HDRI, no white studio room):
+// a dark scene with warm gold / champagne emissive panels → rich warm reflections
+// on the glass droplet and the gold crystal. Plus direct lights for shape.
 export default class Environment {
     constructor(experience) {
         this.scene = experience.scene
@@ -14,13 +14,39 @@ export default class Environment {
 
     setEnvironmentMap() {
         const pmrem = new THREE.PMREMGenerator(this.renderer)
-        this.envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
+
+        const envScene = new THREE.Scene()
+        envScene.background = new THREE.Color('#050505')
+
+        // Emissive panels (HDR-ish via color * intensity) act as area lights for the IBL.
+        const addPanel = (color, intensity, position, size) => {
+            const material = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide })
+            material.color.multiplyScalar(intensity)
+            const panel = new THREE.Mesh(new THREE.PlaneGeometry(size[0], size[1]), material)
+            panel.position.set(position[0], position[1], position[2])
+            panel.lookAt(0, 0, 0)
+            envScene.add(panel)
+        }
+
+        addPanel('#D4AF37', 5.0, [6, 3, 4], [9, 9])     // gold key
+        addPanel('#F7E7CE', 2.5, [-5, 2, -3], [7, 7])   // champagne fill
+        addPanel('#3A2F10', 1.2, [0, -5, 3], [12, 12])  // warm dark floor bounce
+        addPanel('#FFFFFF', 0.8, [-2, 6, -4], [3, 3])   // small white sparkle highlight
+
+        this.envMap = pmrem.fromScene(envScene, 0.04).texture
         this.scene.environment = this.envMap
+
+        // PMREM has captured the scene — release the temporary geometry/materials.
+        envScene.traverse((obj) => {
+            if (obj.geometry) obj.geometry.dispose()
+            if (obj.material) obj.material.dispose()
+        })
         pmrem.dispose()
     }
 
     setLights() {
-        this.ambientLight = new THREE.AmbientLight('#ffffff', 0.5)
+        // Low neutral ambient so the warm env dominates (was 0.5 white = washed out).
+        this.ambientLight = new THREE.AmbientLight('#ffffff', 0.15)
         this.scene.add(this.ambientLight)
 
         this.directionalLight = new THREE.DirectionalLight('#D4AF37', 2)

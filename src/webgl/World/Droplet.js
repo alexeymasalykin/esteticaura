@@ -10,12 +10,14 @@ export default class Droplet {
         this.material = new THREE.MeshPhysicalMaterial({
             color: '#ffffff',
             transmission: 1,
-            thickness: 0.5,        // required for refraction at this object scale
-            roughness: 0.05,       // 0–0.15 polished glass; 0.2–0.6 pixelates — avoid
-            ior: 1.33,             // water
+            thickness: 0.6,        // required for refraction at this object scale
+            roughness: 0.04,       // 0–0.15 polished glass; 0.2–0.6 pixelates — avoid
+            ior: 1.5,              // glass/crystal — crisper refraction & sparkle than water
             clearcoat: 1,
             clearcoatRoughness: 0,
-            iridescence: 0.2       // faint nacre
+            iridescence: 0.1,      // reduced: avoids the milky/murky look
+            attenuationColor: '#F7E7CE',  // champagne tint of light passing through (not flat white)
+            attenuationDistance: 0.8
         })
         this.mesh = new THREE.Mesh(geometry, this.material)
         this.mesh.position.set(0, 0, 0)
