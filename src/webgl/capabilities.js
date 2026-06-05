@@ -1,8 +1,10 @@
 // Decide whether to load the heavy WebGL scene or show the static poster.
 // decideMode is pure (unit-tested); the wrappers below read the live environment.
 
-export function decideMode({ reducedMotion, mobile, webgl }) {
-    if (reducedMotion || mobile || !webgl) return 'poster'
+export function decideMode({ reducedMotion, webgl }) {
+    // Mobile no longer forces the poster — phones get the (responsively-sized) 3D too.
+    // Poster stays only for genuine fallbacks: reduced-motion preference or no WebGL.
+    if (reducedMotion || !webgl) return 'poster'
     return '3d'
 }
 
@@ -27,7 +29,6 @@ export function hasWebGL() {
 export function shouldRender3D() {
     return decideMode({
         reducedMotion: prefersReducedMotion(),
-        mobile: isMobile(),
         webgl: hasWebGL()
     }) === '3d'
 }

@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { isMobile } from '../capabilities.js'
 
 // Gold dust that doubles as the hero object. Each particle has two homes: a scattered
 // ambient position (hero dust field) and a target point on the SURFACE of a round
@@ -7,8 +8,10 @@ import * as THREE from 'three'
 // look, and no transmission needed).
 export default class Particles {
     constructor(experience) {
+        this.experience = experience
         this.scene = experience.scene
-        this.count = 6300
+        // Lighter particle budget on phones (fits the smaller diamond + saves the GPU).
+        this.count = isMobile() ? 3800 : 6300
         this.baseSize = 0.13
         this.progress = 0
 
@@ -142,10 +145,14 @@ export default class Particles {
         // Lerp every particle scatter -> diamond by an eased progress (smoothstep).
         const p = this.progress
         const e = p * p * (3 - 2 * p)
+        // Responsive fit: a wide diamond overflows narrow / portrait screens, so shrink the
+        // diamond target on low aspect ratios (the ambient scatter field is left full-bleed).
+        const aspect = this.experience.sizes.width / this.experience.sizes.height
+        const fit = Math.min(1, Math.max(0.42, aspect / 1.15))
         const pos = this.geometry.attributes.position.array
         const s = this.scatter
         const d = this.diamond
-        for (let i = 0; i < pos.length; i++) pos[i] = s[i] + (d[i] - s[i]) * e
+        for (let i = 0; i < pos.length; i++) pos[i] = s[i] + (d[i] * fit - s[i]) * e
         this.geometry.attributes.position.needsUpdate = true
 
         // Slow rotation (ambient drift / shows the assembled diamond in 3D) + size shimmer.
