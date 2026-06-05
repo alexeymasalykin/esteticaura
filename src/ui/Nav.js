@@ -48,7 +48,12 @@ export default class Nav {
             for (const entry of entries) {
                 if (!entry.isIntersecting) continue
                 const id = `#${entry.target.id}`
-                this.navLinks.forEach((l) => l.classList.toggle('is-active', l.getAttribute('href') === id))
+                this.navLinks.forEach((l) => {
+                    const active = l.getAttribute('href') === id
+                    l.classList.toggle('is-active', active)
+                    if (active) l.setAttribute('aria-current', 'page')
+                    else l.removeAttribute('aria-current')
+                })
             }
         }, { rootMargin: '-50% 0px -50% 0px' })
 

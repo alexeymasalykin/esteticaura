@@ -21,7 +21,7 @@
     --fs-display: clamp(3rem, 8vw, 7rem);
     --fs-h1: clamp(2.2rem, 5vw, 3.5rem);
     --fs-h2: clamp(1.5rem, 3vw, 2.2rem);
-    --fs-h3: clamp(1.1rem, 2vw, 1.4rem);
+    --fs-h3: clamp(1.2rem, 2vw, 1.4rem);
     --fs-body: 1.05rem;
     --fs-caption: 0.8rem;
 
@@ -412,8 +412,8 @@ a {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     transform: translate(-50%, -50%);
     border: 2px solid var(--gold);
     border-radius: 50%;
@@ -633,6 +633,21 @@ body.no-3d canvas.webgl { display: none; }
     );
 }
 body.no-3d .scene-scrim { display: none; } /* poster provides its own contrast */
+
+/* Skip-to-content link — visible only on keyboard focus (a11y). */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: var(--space-2);
+    z-index: var(--z-preloader);
+    background: var(--gold);
+    color: var(--bg);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-caption);
+    font-weight: 600;
+}
+.skip-link:focus { left: var(--space-3); }
 
 /* Insurance for loose text that sits directly over the 3D (not on a --surface card). */
 .section__title,
