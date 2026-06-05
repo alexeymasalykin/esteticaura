@@ -23,10 +23,10 @@ export default class Debug {
             bf.add(postProcessing.bloomPass, 'threshold', 0, 1, 0.01)
         }
 
-        const cf = gui.addFolder('Crystal')
-        cf.add(world.crystal.material, 'roughness', 0, 0.6, 0.005)
-        cf.add(world.crystal.material, 'metalness', 0, 1, 0.01)
-        cf.add(world.crystal.material, 'envMapIntensity', 0, 3, 0.05)
-        cf.add(world.crystal.material, 'clearcoat', 0, 1, 0.01)
+        const pf = gui.addFolder('Dust')
+        pf.add(world.particles.material, 'opacity', 0, 1, 0.01)
+        pf.add(world.particles, 'baseSize', 0.05, 0.4, 0.005).name('size')
+        pf.addColor({ color: '#' + world.particles.material.color.getHexString() }, 'color')
+            .onChange((v) => world.particles.material.color.set(v))
     }
 }
