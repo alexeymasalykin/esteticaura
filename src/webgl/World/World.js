@@ -34,12 +34,14 @@ export default class World {
             }
         })
 
-        // Hero -> Services: droplet shrinks out, crystal scales in.
+        // Hero -> Services: droplet shrinks out (its breathing auto-pauses at scale.x < 0.99).
         tl.to(this.droplet.mesh.scale, { x: 0, y: 0, z: 0, duration: 1 }, 1)
-        tl.call(() => {
-            this.droplet.mesh.visible = false
-            this.crystal.mesh.visible = true
-        }, null, 1.5)
+
+        // Particle flash across the transition (opacity is owned by the morph, not by update()).
+        tl.to(this.particles.material, { opacity: 1, duration: 0.25 }, 1.25)
+        tl.to(this.particles.material, { opacity: 0.6, duration: 0.5 }, 1.5)
+
+        // Crystal assembles in from scale 0 (invisible) -> 1.5. Reversible on scroll-up.
         tl.fromTo(this.crystal.mesh.scale,
             { x: 0, y: 0, z: 0 },
             { x: 1.5, y: 1.5, z: 1.5, duration: 1 }, 1.5)
