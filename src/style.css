@@ -459,7 +459,7 @@ a {
     font-size: var(--fs-body);
     transition: border-color var(--dur) var(--ease-out);
 }
-.field__control:focus { border-color: var(--border-strong); outline: none; }
+.field__control:focus { border-color: var(--border-strong); } /* outline kept: global :focus-visible ring stays for keyboard a11y (WCAG 2.4.7) */
 .field__control[aria-invalid="true"] { border-color: var(--danger); }
 
 .field__error { display: block; min-height: 1.2em; margin-top: var(--space-1); font-size: var(--fs-caption); color: var(--danger); }

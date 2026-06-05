@@ -151,17 +151,17 @@
         <form class="form" data-booking novalidate>
           <div class="field">
             <label class="field__label" for="name">Имя</label>
-            <input class="field__control" id="name" name="name" type="text" autocomplete="name" required>
+            <input class="field__control" id="name" name="name" type="text" autocomplete="name" aria-describedby="name-error" required>
             <span class="field__error" id="name-error" role="alert" aria-live="polite"></span>
           </div>
           <div class="field">
             <label class="field__label" for="phone">Телефон</label>
-            <input class="field__control" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required>
+            <input class="field__control" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" aria-describedby="phone-error" required>
             <span class="field__error" id="phone-error" role="alert" aria-live="polite"></span>
           </div>
           <div class="field">
             <label class="field__label" for="service">Услуга</label>
-            <select class="field__control" id="service" name="service" required>
+            <select class="field__control" id="service" name="service" aria-describedby="service-error" required>
               <option value="">Выберите услугу</option>
               <option>Косметология</option>
               <option>Массаж</option>
