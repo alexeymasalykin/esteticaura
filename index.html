@@ -13,60 +13,202 @@
   </head>
   <body>
     <canvas class="webgl"></canvas>
-    
-    <nav style="position: fixed; top: 0; width: 100%; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; z-index: 100; mix-blend-mode: difference;">
-      <div class="logo" style="font-family: 'Playfair Display'; font-size: 1.5rem; color: #fff;">ESTETICAURA</div>
-      <div class="links">
-        <a href="#about" style="color: #fff; text-decoration: none; margin-left: 30px; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">About</a>
-        <a href="#services" style="color: #fff; text-decoration: none; margin-left: 30px; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Services</a>
-        <a href="#contact" style="color: #fff; text-decoration: none; margin-left: 30px; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Contact</a>
+
+    <nav class="nav">
+      <a href="#hero" class="nav__logo">ESTETICAURA</a>
+      <button class="nav__burger" aria-label="Открыть меню" aria-expanded="false" data-burger>
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav__links" data-nav-links>
+        <a href="#about" class="nav__link">О студии</a>
+        <a href="#services" class="nav__link">Услуги</a>
+        <a href="#booking" class="nav__link">Запись</a>
+        <a href="#contacts" class="nav__link">Контакты</a>
+        <a href="#booking" class="btn">Записаться</a>
       </div>
     </nav>
 
     <main>
-      <section id="hero">
-        <div class="hero-content">
-          <h1 class="hero-title">Esteticaura<br>Love</h1>
-          <p class="hero-subtitle">Where Beauty Meets Art</p>
-          <a href="#book" class="btn">Book Appointment</a>
+      <!-- 1. Hero -->
+      <section id="hero" class="hero">
+        <h1 class="hero__title">Esteticaura Love</h1>
+        <p class="hero__subtitle">Где красота становится искусством</p>
+        <div class="hero__actions">
+          <a href="#booking" class="btn">Записаться</a>
+          <a href="#services" class="btn--ghost btn">Услуги</a>
         </div>
       </section>
 
-      <section id="about">
-        <div class="glass-card">
-          <h2>Our Philosophy</h2>
-          <p style="margin-top: 20px; line-height: 1.6;">
-            We believe that beauty is an art form. At ESTETICAURA Love, we combine advanced aesthetic technology with a holistic approach to reveal your inner radiance.
-          </p>
+      <!-- 2. О студии -->
+      <section id="about" class="section">
+        <p class="section__caption">О студии</p>
+        <h2 class="section__title">Наша философия</h2>
+        <p class="about__lead">
+          Мы убеждены, что красота — это форма искусства. В ESTETICAURA Love мы соединяем
+          передовые эстетические технологии с холистическим подходом, чтобы раскрыть ваше
+          внутреннее сияние.
+        </p>
+        <!-- TODO: replace with real data -->
+        <div class="meta">
+          <div class="meta__item"><span class="meta__num tabular">8 лет</span><span class="meta__label">на рынке</span></div>
+          <div class="meta__item"><span class="meta__num tabular">5000+</span><span class="meta__label">клиентов</span></div>
+          <div class="meta__item"><span class="meta__num tabular">12</span><span class="meta__label">мастеров</span></div>
         </div>
       </section>
 
-      <section id="services">
-        <div style="display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;">
-          <div class="glass-card">
-            <h3>Cosmetology</h3>
-            <p>Advanced skin treatments for a flawless glow.</p>
-          </div>
-          <div class="glass-card">
-            <h3>Massage</h3>
-            <p>Relaxing therapies to rejuvenate your body and soul.</p>
-          </div>
-          <div class="glass-card">
-            <h3>Aesthetics</h3>
-            <p>Precise enhancements for natural beauty.</p>
-          </div>
+      <!-- 3. Услуги -->
+      <section id="services" class="section">
+        <p class="section__caption">Услуги</p>
+        <h2 class="section__title">Что мы предлагаем</h2>
+        <!-- TODO: replace with real data (prices) -->
+        <div class="services__grid">
+          <article class="card">
+            <span class="service__num tabular">01</span>
+            <h3 class="service__name">Косметология</h3>
+            <p class="service__desc">Аппаратный и инъекционный уход для безупречного состояния кожи.</p>
+            <p class="service__price tabular">от 3 000 ₽</p>
+            <a href="#booking" class="service__more nav__link">Подробнее</a>
+          </article>
+          <article class="card">
+            <span class="service__num tabular">02</span>
+            <h3 class="service__name">Массаж</h3>
+            <p class="service__desc">Расслабляющие и моделирующие техники для тела и лица.</p>
+            <p class="service__price tabular">от 2 500 ₽</p>
+            <a href="#booking" class="service__more nav__link">Подробнее</a>
+          </article>
+          <article class="card">
+            <span class="service__num tabular">03</span>
+            <h3 class="service__name">Эстетика</h3>
+            <p class="service__desc">Точные процедуры для естественной, ухоженной красоты.</p>
+            <p class="service__price tabular">от 4 000 ₽</p>
+            <a href="#booking" class="service__more nav__link">Подробнее</a>
+          </article>
+          <article class="card">
+            <span class="service__num tabular">04</span>
+            <h3 class="service__name">Уход</h3>
+            <p class="service__desc">Программы домашнего и салонного ухода под ваш тип кожи.</p>
+            <p class="service__price tabular">от 1 800 ₽</p>
+            <a href="#booking" class="service__more nav__link">Подробнее</a>
+          </article>
         </div>
       </section>
 
-      <section id="contact">
-        <div class="glass-card">
-          <h2>Visit Us</h2>
-          <p style="margin-top: 20px;">123 Beauty Lane, Luxury District</p>
-          <p>+1 (555) 123-4567</p>
-          <a href="mailto:info@esteticaura.com" class="btn">Email Us</a>
+      <!-- 4. Социальное доказательство -->
+      <section id="proof" class="section">
+        <p class="section__caption">Нам доверяют</p>
+        <h2 class="section__title">Результаты говорят сами</h2>
+
+        <h3 class="proof__subtitle">Работы до / после</h3>
+        <!-- TODO: replace with real images. Slider JS wires via [data-ba]. -->
+        <div class="ba-grid">
+          <div class="ba" data-ba>
+            <img class="ba__img" src="https://placehold.co/800x600/0E0E0F/8A6E2F?text=До" alt="До процедуры" width="800" height="600">
+            <img class="ba__img ba__after" data-ba-after src="https://placehold.co/800x600/16161A/D4AF37?text=После" alt="После процедуры" width="800" height="600">
+            <div class="ba__handle" data-ba-handle></div>
+            <span class="ba__caption">Косметология</span>
+          </div>
+          <div class="ba" data-ba>
+            <img class="ba__img" src="https://placehold.co/800x600/0E0E0F/8A6E2F?text=До" alt="До процедуры" width="800" height="600">
+            <img class="ba__img ba__after" data-ba-after src="https://placehold.co/800x600/16161A/D4AF37?text=После" alt="После процедуры" width="800" height="600">
+            <div class="ba__handle" data-ba-handle></div>
+            <span class="ba__caption">Эстетика</span>
+          </div>
+        </div>
+
+        <h3 class="proof__subtitle">Отзывы</h3>
+        <!-- TODO: replace with real reviews -->
+        <div class="reviews">
+          <article class="card">
+            <div class="review__head">
+              <img class="review__avatar" src="https://placehold.co/96x96/16161A/D4AF37?text=А" alt="" width="96" height="96">
+              <div><div class="review__name">Анна</div><div class="review__service">Косметология</div></div>
+            </div>
+            <p class="review__text">«Кожа преобразилась за курс. Внимательные мастера и спокойная атмосфера.»</p>
+          </article>
+          <article class="card">
+            <div class="review__head">
+              <img class="review__avatar" src="https://placehold.co/96x96/16161A/D4AF37?text=М" alt="" width="96" height="96">
+              <div><div class="review__name">Мария</div><div class="review__service">Массаж</div></div>
+            </div>
+            <p class="review__text">«Лучший массаж в городе. Ухожу как заново родившаяся.»</p>
+          </article>
+          <article class="card">
+            <div class="review__head">
+              <img class="review__avatar" src="https://placehold.co/96x96/16161A/D4AF37?text=Е" alt="" width="96" height="96">
+              <div><div class="review__name">Елена</div><div class="review__service">Эстетика</div></div>
+            </div>
+            <p class="review__text">«Естественный результат, которого я искала. Рекомендую студию.»</p>
+          </article>
+        </div>
+
+        <div class="proof__cta"><a href="#booking" class="btn">Записаться</a></div>
+      </section>
+
+      <!-- 5. Запись -->
+      <section id="booking" class="section">
+        <p class="section__caption">Запись</p>
+        <h2 class="section__title">Записаться на приём</h2>
+        <form class="form" data-booking novalidate>
+          <div class="field">
+            <label class="field__label" for="name">Имя</label>
+            <input class="field__control" id="name" name="name" type="text" autocomplete="name" required>
+            <span class="field__error" id="name-error" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="phone">Телефон</label>
+            <input class="field__control" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required>
+            <span class="field__error" id="phone-error" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="service">Услуга</label>
+            <select class="field__control" id="service" name="service" required>
+              <option value="">Выберите услугу</option>
+              <option>Косметология</option>
+              <option>Массаж</option>
+              <option>Эстетика</option>
+              <option>Уход</option>
+            </select>
+            <span class="field__error" id="service-error" role="alert" aria-live="polite"></span>
+          </div>
+          <button class="btn" type="submit" data-submit>Отправить заявку</button>
+          <p class="form__status" data-status role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- 6. Контакты -->
+      <section id="contacts" class="section">
+        <p class="section__caption">Контакты</p>
+        <h2 class="section__title">Как нас найти</h2>
+        <!-- TODO: replace with real data -->
+        <div class="contacts__grid">
+          <div class="contacts__item"><strong>Адрес</strong>Москва, ул. Красоты, 12</div>
+          <div class="contacts__item"><strong>Телефон</strong><a href="tel:+79990000000" class="tabular">+7 999 000-00-00</a></div>
+          <div class="contacts__item"><strong>Часы работы</strong>Ежедневно 10:00–21:00</div>
+          <div class="contacts__item">
+            <strong>Мы в сети</strong>
+            <a href="mailto:hello@esteticaura.love">hello@esteticaura.love</a>
+            <div class="socials">
+              <a class="socials__link" href="https://t.me/esteticaura" aria-label="Telegram" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.8 16.6l-.4 4c.5 0 .8-.2 1-.5l2.5-2.3 5 3.7c.9.5 1.6.2 1.8-.8l3.3-15.3c.3-1.3-.5-1.8-1.4-1.5L1.5 9.6C.2 10.1.2 10.9 1.3 11.2l5.3 1.6L18.9 6c.5-.3 1-.2.6.2L9.8 16.6z"/></svg>
+              </a>
+              <a class="socials__link" href="https://wa.me/79990000000" aria-label="WhatsApp" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-2.7-1-4.4-3.7-4.6-3.9-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.9-2.1.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.7 1.7c.1.2 0 .4-.1.5l-.3.4c-.1.1-.2.3-.1.5.2.3.8 1.2 1.6 1.7 1 .6 1.4.6 1.6.5.2-.1.4-.5.6-.7.1-.2.3-.2.5-.1l1.6.8c.2.1.4.2.4.3.1.2.1.6 0 1z"/></svg>
+              </a>
+              <a class="socials__link" href="https://instagram.com/esteticaura" aria-label="Instagram" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.1.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.1-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.1-.4-.3-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.1 1-.3 2.2-.4 1.3-.1 1.7-.1 4.9-.1zm0 3.2A6.6 6.6 0 1018.6 12 6.6 6.6 0 0012 5.4zm0 10.9A4.3 4.3 0 1116.3 12 4.3 4.3 0 0112 16.3zm6.8-11.1a1.5 1.5 0 11-1.5-1.5 1.5 1.5 0 011.5 1.5z"/></svg>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </main>
+
+    <!-- 7+8. Footer -->
+    <footer class="footer">
+      <span class="nav__logo">ESTETICAURA</span>
+      <span class="tabular">© 2026 ESTETICAURA Love. Все права защищены.</span>
+      <a href="#" class="nav__link">Политика конфиденциальности</a>
+    </footer>
 
     <script type="module" src="/src/main.js"></script>
   </body>
