@@ -615,3 +615,48 @@ body.no-3d canvas.webgl { display: none; }
 @media (prefers-reduced-motion: reduce) {
     .scene-poster::after { display: none; } /* keep it perfectly still */
 }
+
+/* ===== Readability scrim — dims the bright 3D diamond behind text content =====
+   Sits between the canvas (z-index:-1) and the content (z-index:10): the gold diamond
+   stays visible as an atmospheric glow, but gold-toned headings/links no longer blend
+   into it. Slightly stronger at top/bottom (nav + footer). */
+.scene-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        rgba(5, 5, 5, .62),
+        rgba(5, 5, 5, .44) 22%,
+        rgba(5, 5, 5, .44) 74%,
+        rgba(5, 5, 5, .66)
+    );
+}
+body.no-3d .scene-scrim { display: none; } /* poster provides its own contrast */
+
+/* Insurance for loose text that sits directly over the 3D (not on a --surface card). */
+.section__title,
+.section__caption,
+.proof__subtitle,
+.hero__subtitle,
+.about__lead,
+.meta__num,
+.meta__label,
+.footer,
+.footer .nav__logo {
+    text-shadow: 0 1px 10px rgba(5, 5, 5, .85);
+}
+
+/* Contacts + footer sit at the bottom where the assembled diamond is brightest — the
+   contacts are loose text (not on a card), so back them with a frosted surface panel. */
+.contacts__item {
+    background: rgba(14, 14, 15, .72);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    backdrop-filter: blur(3px);
+}
+.footer {
+    background: rgba(5, 5, 5, .6);
+    backdrop-filter: blur(3px);
+}
