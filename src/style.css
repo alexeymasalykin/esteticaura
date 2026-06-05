@@ -16,7 +16,7 @@
     --danger: #E5867A;
 
     /* typography */
-    --font-heading: 'Playfair Display', serif;
+    --font-heading: 'Cormorant Garamond', serif;
     --font-body: 'Inter', sans-serif;
     --fs-display: clamp(3rem, 8vw, 7rem);
     --fs-h1: clamp(2.2rem, 5vw, 3.5rem);
