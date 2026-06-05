@@ -12,6 +12,7 @@ export default class Experience {
         window.experience = this
         this.canvas = canvas
         this.ready = false
+        this.paused = false
 
         this.sizes = {
             width: window.innerWidth,
@@ -49,6 +50,15 @@ export default class Experience {
             this.scrollY = window.scrollY
         })
 
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.paused = true
+            } else if (this.paused) {
+                this.paused = false
+                this.tick()
+            }
+        })
+
         // No external assets to load anymore — build the world synchronously.
         this.world = new World(this)
 
@@ -77,6 +87,7 @@ export default class Experience {
     }
 
     tick() {
+        if (this.paused) return
         const elapsedTime = this.clock.getElapsedTime()
 
         if (this.world) {
