@@ -547,3 +547,43 @@ a {
     .custom-cursor,
     .custom-cursor-follower { display: none !important; }
 }
+
+/* ===== Preloader ===== */
+.preloader {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-preloader);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--gold);
+}
+.preloader-logo {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    letter-spacing: .1em;
+    margin-bottom: var(--space-3);
+    opacity: 0;
+    animation: preloader-fade 1s forwards;
+}
+.preloader-bar-container {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+}
+.preloader-bar {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    background: var(--gold);
+    animation: preloader-load 2s infinite;
+}
+@keyframes preloader-fade { to { opacity: 1; } }
+@keyframes preloader-load {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}

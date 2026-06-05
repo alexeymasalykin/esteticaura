@@ -16,8 +16,6 @@ export default class Preloader {
         `
         document.body.appendChild(this.overlay)
 
-        this.addStyles()
-
         // World is built synchronously — experience may already be ready.
         if (this.experience.ready) {
             this.hide()
@@ -31,55 +29,6 @@ export default class Preloader {
                 this.hide()
             }
         }, 4000)
-    }
-
-
-    addStyles() {
-        const style = document.createElement('style')
-        style.innerHTML = `
-            .preloader {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: #050505;
-                z-index: 10000;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                color: #D4AF37;
-            }
-            .preloader-logo {
-                font-family: 'Playfair Display', serif;
-                font-size: 2rem;
-                margin-bottom: 20px;
-                opacity: 0;
-                animation: fadeIn 1s forwards;
-            }
-            .preloader-bar-container {
-                width: 200px;
-                height: 2px;
-                background: rgba(212, 175, 55, 0.2);
-                position: relative;
-                overflow: hidden;
-            }
-            .preloader-bar {
-                width: 0%;
-                height: 100%;
-                background: #D4AF37;
-                transition: width 0.5s ease;
-                animation: load 2s infinite;
-            }
-            @keyframes fadeIn {
-                to { opacity: 1; }
-            }
-            @keyframes load {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
-            }
-        `
-        document.head.appendChild(style)
     }
 
     hide() {
