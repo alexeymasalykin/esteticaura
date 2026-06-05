@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="До процедуры">
+  <defs>
+    <linearGradient id="bgB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16161A"/>
+      <stop offset="1" stop-color="#0A0A0B"/>
+    </linearGradient>
+    <radialGradient id="skinB" cx="50%" cy="42%" r="42%">
+      <stop offset="0" stop-color="#3A3632"/>
+      <stop offset="1" stop-color="#1C1A18"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgB)"/>
+  <ellipse cx="400" cy="280" rx="180" ry="225" fill="url(#skinB)"/>
+  <text x="44" y="556" font-family="Playfair Display, Georgia, serif" font-size="58" letter-spacing="8" fill="#8A6E2F">ДО</text>
+</svg>
