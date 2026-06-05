@@ -1,9 +1,7 @@
 import gsap from 'gsap'
 
 export default class Preloader {
-    constructor(experience) {
-        this.experience = experience
-
+    constructor() {
         this.overlay = document.createElement('div')
         this.overlay.classList.add('preloader')
         this.overlay.innerHTML = `
@@ -16,12 +14,9 @@ export default class Preloader {
         `
         document.body.appendChild(this.overlay)
 
-        // World is built synchronously — experience may already be ready.
-        if (this.experience.ready) {
-            this.hide()
-        } else {
-            window.addEventListener('experience-ready', () => this.hide(), { once: true })
-        }
+        // The 3D scene now loads asynchronously (or not at all). Hide on the ready signal;
+        // in poster mode main.js dispatches 'experience-ready' itself.
+        window.addEventListener('experience-ready', () => this.hide(), { once: true })
 
         // Safety fallback in case the ready signal never fires.
         setTimeout(() => {
