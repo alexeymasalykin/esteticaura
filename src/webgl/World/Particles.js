@@ -8,7 +8,7 @@ import * as THREE from 'three'
 export default class Particles {
     constructor(experience) {
         this.scene = experience.scene
-        this.count = 7000
+        this.count = 6300
         this.baseSize = 0.13
         this.progress = 0
 
