@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import World from './World/World.js'
 import PostProcessing from './PostProcessing.js'
+import Debug from './Debug.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -52,6 +53,7 @@ export default class Experience {
         this.world = new World(this)
 
         this.postProcessing = new PostProcessing(this)
+        this.debug = new Debug(this)
 
         this.ready = true
         window.dispatchEvent(new Event('experience-ready'))
