@@ -1,27 +1,22 @@
 import * as THREE from 'three'
 
-// Scroll-target object: a transparent brilliant-cut DIAMOND (pavilion + crown).
-// Clear refractive glass with a high IOR + gold attenuation → it refracts the golden-noir
-// environment ("golden diamond"). Flat-shaded facets give per-face sparkle. Slow, organic
-// motion (not a uniform screensaver spin). Scale 0 until the morph scales it in (reversible).
+// Scroll-target object: a polished GOLD brilliant-cut gem (pavilion + crown).
+// NO transmission (renders opaque through bloom / on weak GPUs). The premium look comes
+// from a sharp metallic mirror (low roughness) reflecting the golden-noir environment +
+// flat-shaded facets + slow organic motion. The old "cheap 90s" look was flat color with
+// no reflections + a fast uniform spin — both fixed here.
 export default class Crystal {
     constructor(experience) {
         this.scene = experience.scene
 
         this.material = new THREE.MeshPhysicalMaterial({
-            color: '#ffffff',
-            metalness: 0,
-            roughness: 0.0,
-            transmission: 1,
-            thickness: 1.0,
-            ior: 2.2,                      // diamond-like → strong refraction & sparkle
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-            flatShading: true,             // sharp facets refract per-face
-            iridescence: 0.3,              // a hint of fire/dispersion
-            envMapIntensity: 1.5,
-            attenuationColor: '#D4AF37',   // refracted light picks up gold → golden diamond
-            attenuationDistance: 1.2
+            color: '#E8C457',       // brighter gold base so shadowed facets still read gold
+            metalness: 1,
+            roughness: 0.28,        // softer facets — even gold sheen, less blown highlight
+            flatShading: true,
+            clearcoat: 0.5,
+            clearcoatRoughness: 0.1,
+            envMapIntensity: 1.3
         })
 
         this.mesh = new THREE.Group()

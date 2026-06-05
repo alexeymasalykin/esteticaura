@@ -41,12 +41,12 @@ export default class World {
         tl.to(this.particles.material, { opacity: 1, duration: 0.25 }, 1.25)
         tl.to(this.particles.material, { opacity: 0.6, duration: 0.5 }, 1.5)
 
-        // Crystal assembles in from scale 0 (invisible) -> 1.5. Reversible on scroll-up.
+        // Crystal assembles in from scale 0 (invisible) -> 1.0. Reversible on scroll-up.
         tl.fromTo(this.crystal.mesh.scale,
             { x: 0, y: 0, z: 0 },
-            { x: 1.5, y: 1.5, z: 1.5, duration: 1 }, 1.5)
+            { x: 1.0, y: 1.0, z: 1.0, duration: 1 }, 1.5)
 
-        // Subtle camera dolly across the page.
-        tl.to(this.experience.camera.position, { z: 4, duration: 4 }, 0)
+        // Subtle camera dolly across the page (gentle — keeps the gem from filling the screen).
+        tl.to(this.experience.camera.position, { z: 5, duration: 4 }, 0)
     }
 }

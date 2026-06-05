@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 
-// Hero object: a real water droplet — teardrop silhouette (round bottom, pointed top),
-// tinted clear glass. Moves with weight / surface tension, NOT a weightless float-spin.
+// Hero object: a water/serum droplet — teardrop silhouette, dewy pearlescent glass.
+// NO transmission (it renders opaque through EffectComposer/bloom and on weak GPUs):
+// the "glass" comes from a polished clearcoat + iridescent sheen + strong env reflections
+// + light translucency. Robust on every GPU and verifiable in headless.
 export default class Droplet {
     constructor(experience) {
         this.scene = experience.scene
@@ -9,15 +11,15 @@ export default class Droplet {
         const geometry = this.createTeardropGeometry()
         this.material = new THREE.MeshPhysicalMaterial({
             color: '#ffffff',
-            transmission: 1,
-            thickness: 0.6,
-            roughness: 0.04,
-            ior: 1.5,
+            metalness: 0,
+            roughness: 0.02,
             clearcoat: 1,
             clearcoatRoughness: 0,
-            iridescence: 0.1,
-            attenuationColor: '#F7E7CE',   // champagne tint of light passing through
-            attenuationDistance: 0.8
+            transparent: true,
+            opacity: 0.6,
+            iridescence: 0.5,
+            iridescenceIOR: 1.6,
+            envMapIntensity: 2.5
         })
         this.mesh = new THREE.Mesh(geometry, this.material)
         this.mesh.position.set(0, 0, 0)
