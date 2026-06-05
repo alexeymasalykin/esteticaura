@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import World from './World/World.js'
+import PostProcessing from './PostProcessing.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -50,6 +51,8 @@ export default class Experience {
         // No external assets to load anymore — build the world synchronously.
         this.world = new World(this)
 
+        this.postProcessing = new PostProcessing(this)
+
         this.ready = true
         window.dispatchEvent(new Event('experience-ready'))
 
@@ -67,6 +70,8 @@ export default class Experience {
 
         this.renderer.setSize(this.sizes.width, this.sizes.height)
         this.renderer.setPixelRatio(this.sizes.pixelRatio)
+
+        if (this.postProcessing) this.postProcessing.resize()
     }
 
     tick() {
@@ -81,7 +86,11 @@ export default class Experience {
         this.camera.position.x += (parallaxX - this.camera.position.x) * 0.05
         this.camera.position.y += (parallaxY - this.camera.position.y) * 0.05
 
-        this.renderer.render(this.scene, this.camera)
+        if (this.postProcessing && this.postProcessing.enabled) {
+            this.postProcessing.render()
+        } else {
+            this.renderer.render(this.scene, this.camera)
+        }
         window.requestAnimationFrame(() => this.tick())
     }
 }
