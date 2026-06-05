@@ -35,7 +35,7 @@ export default class Experience {
         this.renderer.setSize(this.sizes.width, this.sizes.height)
         this.renderer.setPixelRatio(this.sizes.pixelRatio)
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping
-        this.renderer.toneMappingExposure = 1.1
+        this.renderer.toneMappingExposure = 0.39
 
         this.scrollY = window.scrollY
         this.cursor = { x: 0, y: 0 }

@@ -22,8 +22,8 @@ export default class PostProcessing {
 
         this.bloomPass = new UnrealBloomPass(
             new THREE.Vector2(sizes.width, sizes.height),
-            0.4,   // strength — gold on black, keep conservative
-            1.2,   // radius
+            0.38,  // strength — tuned (gold on black, conservative)
+            0.43,  // radius — tuned (tighter glow)
             0.1    // threshold
         )
         this.composer.addPass(this.bloomPass)
