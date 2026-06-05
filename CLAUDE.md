@@ -27,7 +27,8 @@ Vite 5 · vanilla JS (ESM, без фреймворка) · Three.js r160 · GSAP
 --bg:#050505 · --surface:#0E0E0F · --surface-hi:#16161A
 --gold:#D4AF37 · --gold-light:#F7E7CE · --gold-dark:#8A6E2F
 --text:#F5F3EE · --text-muted:rgba(245,243,238,.66) · --text-faint:rgba(245,243,238,.55)
-шрифты: Playfair Display (заголовки) + Inter (тело)
+шрифты: Cormorant Garamond (заголовки, современный editorial-серив с кириллицей) + Inter (тело).
+  NB: исходный Playfair заменён по запросу заказчика; Fraunces НЕ подошёл (нет кириллицы)
 кнопки: .btn (primary, заливка золотом) / .btn--ghost (secondary, обводка)
 движение: --dur-fast:150ms · --dur:250ms · --ease-out — все hover в 150–300ms
 ```
