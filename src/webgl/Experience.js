@@ -1,0 +1,97 @@
+import * as THREE from 'three'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Resources from './Resources.js'
+import World from './World/World.js'
+
+gsap.registerPlugin(ScrollTrigger)
+
+export default class Experience {
+    constructor(canvas) {
+        window.experience = this
+        this.canvas = canvas
+
+        // Setup
+        this.sizes = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            pixelRatio: Math.min(window.devicePixelRatio, 2)
+        }
+
+        this.scene = new THREE.Scene()
+        this.scene.background = new THREE.Color('#050505')
+        this.scene.fog = new THREE.Fog('#050505', 10, 50)
+
+        this.camera = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 100)
+        this.camera.position.set(0, 0, 6)
+        this.scene.add(this.camera)
+
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
+            antialias: true,
+            alpha: true
+        })
+        this.renderer.setSize(this.sizes.width, this.sizes.height)
+        this.renderer.setPixelRatio(this.sizes.pixelRatio)
+        this.renderer.toneMapping = THREE.ReinhardToneMapping
+        this.renderer.toneMappingExposure = 1.5
+
+        // Scroll
+        this.scrollY = window.scrollY
+        this.scrollX = 0
+        this.cursor = { x: 0, y: 0 }
+
+        // Events
+        window.addEventListener('resize', () => this.resize())
+        window.addEventListener('mousemove', (e) => {
+            this.cursor.x = e.clientX / this.sizes.width - 0.5
+            this.cursor.y = e.clientY / this.sizes.height - 0.5
+        })
+        window.addEventListener('scroll', () => {
+            this.scrollY = window.scrollY
+        })
+
+        // World
+        this.resources = new Resources([
+            { name: 'logo', type: 'texture', path: '/logo.jpg' }
+        ])
+
+        this.resources.on('ready', () => {
+            this.world = new World(this)
+        })
+
+        // Loop
+        this.clock = new THREE.Clock()
+        this.tick()
+    }
+
+    resize() {
+        this.sizes.width = window.innerWidth
+        this.sizes.height = window.innerHeight
+        this.sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
+
+        this.camera.aspect = this.sizes.width / this.sizes.height
+        this.camera.updateProjectionMatrix()
+
+        this.renderer.setSize(this.sizes.width, this.sizes.height)
+        this.renderer.setPixelRatio(this.sizes.pixelRatio)
+    }
+
+    tick() {
+        const elapsedTime = this.clock.getElapsedTime()
+        const deltaTime = this.clock.getDelta()
+
+        if (this.world) {
+            this.world.update(elapsedTime, deltaTime)
+        }
+
+        // Parallax
+        const parallaxX = this.cursor.x * 0.5
+        const parallaxY = - this.cursor.y * 0.5
+        this.camera.position.x += (parallaxX - this.camera.position.x) * 0.05
+        this.camera.position.y += (parallaxY - this.camera.position.y) * 0.05
+
+        this.renderer.render(this.scene, this.camera)
+        window.requestAnimationFrame(() => this.tick())
+    }
+}
