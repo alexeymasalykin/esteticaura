@@ -40,6 +40,7 @@ export default class Particles {
                 uSize: { value: 0.16 },
                 uFit: { value: 1 },
                 uScaleH: { value: 450 },
+                uBoost: { value: 1 },
                 uOpacity: { value: 0.7 },
                 uTint: { value: new THREE.Color('#ffffff') }
             },
@@ -55,6 +56,7 @@ export default class Particles {
                 uniform float uSize;
                 uniform float uFit;
                 uniform float uScaleH;
+                uniform float uBoost;
 
                 varying vec3 vColor;
                 varying float vFog;
@@ -79,7 +81,10 @@ export default class Particles {
                     float twinkle = 0.72 + 0.28 * sin(uTime * (1.6 + aPhase * 1.2) + aPhase * 6.2832);
                     // Narrow screens shrink the diamond (uFit) — shrink sparks with it,
                     // partially, so the small diamond keeps a fine grain instead of chunky dots.
-                    gl_PointSize = uSize * aScale * twinkle * (0.7 + 0.3 * uFit) * (uScaleH / -mvPosition.z);
+                    // uBoost (assembled state only) equalizes spark density with the mobile
+                    // look on wide screens: overlapping additive sparks burn into white glints.
+                    gl_PointSize = uSize * aScale * twinkle * (0.7 + 0.3 * uFit) * mix(1.0, uBoost, p)
+                        * (uScaleH / -mvPosition.z);
 
                     vColor = aColor;
                     // Matches the scene fog (#050505, 10..50) the old PointsMaterial used.
@@ -125,7 +130,11 @@ export default class Particles {
         const { width, height, pixelRatio } = this.experience.sizes
         // Responsive fit: shrink the diamond target on narrow / portrait aspects
         // (the ambient scatter field is left full-bleed).
-        this.material.uniforms.uFit.value = Math.min(1, Math.max(0.42, (width / height) / 1.15))
+        const fit = Math.min(1, Math.max(0.42, (width / height) / 1.15))
+        this.material.uniforms.uFit.value = fit
+        // Wide screens spread the same particle budget over a bigger diamond — boost
+        // assembled spark size so the per-area glitter density matches the phone look.
+        this.material.uniforms.uBoost.value = 1 + ((fit - 0.42) / 0.58) * 0.5
         // Point size attenuation works in device pixels.
         this.material.uniforms.uScaleH.value = height * 0.5 * pixelRatio
         this.material.uniforms.uTime.value = elapsedTime

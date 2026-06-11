@@ -62,7 +62,7 @@ export default class World {
             const pp = this.experience.postProcessing
             if (pp && pp.enabled) pp.bloomPass.strength = bloom.strength
         }
-        tl.to(bloom, { strength: 0.95, duration: 0.3, ease: 'power2.out', onUpdate: applyBloom }, 1.0)
+        tl.to(bloom, { strength: 0.75, duration: 0.3, ease: 'power2.out', onUpdate: applyBloom }, 1.0)
         tl.to(bloom, { strength: 0.38, duration: 0.5, onUpdate: applyBloom }, 1.3)
 
         // Act 3 — the assembled diamond leaves the stage: shrinks, drifts top-right,
