@@ -16,6 +16,15 @@ export default class Particles {
         // Diamond sized + vertically centered to fit the viewport whole at assembly time.
         this.diamondSize = 1.8
 
+        // Comet trail: dust gathers behind the cursor. Mouse-only — on touch the
+        // cursor never moves and the dust would clump dead-center.
+        this.cometEnabled = window.matchMedia('(pointer: fine)').matches
+        this.cometStrength = 1
+        this.cometHead = new THREE.Vector2()
+        this.cometTail = new THREE.Vector2()
+        this.cometTarget = new THREE.Vector2()
+        this.lastTime = 0
+
         this.setGeometry()
         this.setMaterial()
         this.setPoints()
@@ -42,7 +51,10 @@ export default class Particles {
                 uScaleH: { value: 450 },
                 uBoost: { value: 1 },
                 uOpacity: { value: 0.7 },
-                uTint: { value: new THREE.Color('#ffffff') }
+                uTint: { value: new THREE.Color('#ffffff') },
+                uPointer: { value: new THREE.Vector2() },
+                uTrail: { value: new THREE.Vector2() },
+                uComet: { value: 0 }
             },
             vertexShader: /* glsl */ `
                 attribute vec3 aTarget;
@@ -57,9 +69,13 @@ export default class Particles {
                 uniform float uFit;
                 uniform float uScaleH;
                 uniform float uBoost;
+                uniform vec2 uPointer;
+                uniform vec2 uTrail;
+                uniform float uComet;
 
                 varying vec3 vColor;
                 varying float vFog;
+                varying float vGlow;
 
                 void main() {
                     // Staggered assembly: each particle departs at its own delay; the
@@ -75,6 +91,28 @@ export default class Particles {
                     ) * 0.35 * (1.0 - p);
 
                     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+
+                    // Comet trail: dust on screen near the cursor is pulled toward the
+                    // cursor RAY (view space, per-depth ray point — so every depth layer
+                    // lines up under the cursor on screen). The segment head (cursor) ->
+                    // tail (laggy smoothed cursor) stretches the clump on movement.
+                    // Dust state only: the pull dies with morph progress.
+                    vGlow = 0.0;
+                    if (uComet > 0.0) {
+                        float depth = -mvPosition.z;
+                        vec2 ba = (uPointer - uTrail) * depth;
+                        vec2 pa = mvPosition.xy - uTrail * depth;
+                        float h = clamp(dot(pa, ba) / max(dot(ba, ba), 1e-5), 0.0, 1.0);
+                        vec2 toAxis = (uTrail * depth + ba * h) - mvPosition.xy;
+                        float pull = smoothstep(0.24 * depth, 0.0, length(toAxis)) // ~constant screen radius
+                            * (0.6 + 0.4 * h)              // head denser than tail
+                            * smoothstep(1.5, 3.0, depth)  // skip dust right at the lens
+                            * (0.75 + 0.25 * aPhase)       // loose grouping, not a hard snap
+                            * uComet * (1.0 - p);
+                        mvPosition.xy += toAxis * min(pull * 1.1, 0.85);
+                        vGlow = pull;
+                    }
+
                     gl_Position = projectionMatrix * mvPosition;
 
                     // Per-particle twinkle (own speed + phase) replaces the old global pulse.
@@ -84,7 +122,7 @@ export default class Particles {
                     // uBoost (assembled state only) equalizes spark density with the mobile
                     // look on wide screens: overlapping additive sparks burn into white glints.
                     gl_PointSize = uSize * aScale * twinkle * (0.7 + 0.3 * uFit) * mix(1.0, uBoost, p)
-                        * (uScaleH / -mvPosition.z);
+                        * (1.0 + vGlow * 0.8) * (uScaleH / -mvPosition.z);
 
                     vColor = aColor;
                     // Matches the scene fog (#050505, 10..50) the old PointsMaterial used.
@@ -97,13 +135,15 @@ export default class Particles {
 
                 varying vec3 vColor;
                 varying float vFog;
+                varying float vGlow;
 
                 void main() {
                     // Procedural soft round sprite (bright core, feathered halo).
                     float d = distance(gl_PointCoord, vec2(0.5));
                     float alpha = smoothstep(0.5, 0.08, d);
                     alpha *= alpha;
-                    gl_FragColor = vec4(vColor * uTint * (1.0 - vFog), alpha * uOpacity);
+                    // Comet-gathered sparks burn brighter.
+                    gl_FragColor = vec4(vColor * uTint * (1.0 + vGlow * 1.5) * (1.0 - vFog), alpha * uOpacity);
                     #include <tonemapping_fragment>
                     #include <colorspace_fragment>
                 }
@@ -139,7 +179,32 @@ export default class Particles {
         this.material.uniforms.uScaleH.value = height * 0.5 * pixelRatio
         this.material.uniforms.uTime.value = elapsedTime
 
+        this.updateComet(elapsedTime)
+
         // Slow rotation: ambient drift in the hero, shows the assembled diamond in 3D.
         this.points.rotation.y = elapsedTime * 0.06
+    }
+
+    // Smoothed cursor head + lagging tail as view-space ray tangents (xy per unit
+    // depth). The lag between the two stretches the gathered dust into a comet trail.
+    updateComet(elapsedTime) {
+        if (!this.cometEnabled) return
+        const dt = Math.min(elapsedTime - this.lastTime, 0.1)
+        this.lastTime = elapsedTime
+
+        const { camera, cursor } = this.experience
+        const tanHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
+        this.cometTarget.set(
+            cursor.x * 2 * tanHalf * camera.aspect,
+            -cursor.y * 2 * tanHalf
+        )
+        // Frame-rate independent smoothing: fast head, lazy tail — the gap between
+        // them is the comet's length, so the trail lingers ~a second after movement.
+        this.cometHead.lerp(this.cometTarget, 1 - Math.exp(-8 * dt))
+        this.cometTail.lerp(this.cometTarget, 1 - Math.exp(-1.1 * dt))
+
+        this.material.uniforms.uPointer.value.copy(this.cometHead)
+        this.material.uniforms.uTrail.value.copy(this.cometTail)
+        this.material.uniforms.uComet.value = this.cometStrength
     }
 }

@@ -29,5 +29,6 @@ export default class Debug {
         pf.add(uniforms.uSize, 'value', 0.05, 0.4, 0.005).name('size')
         pf.addColor({ tint: '#' + uniforms.uTint.value.getHexString() }, 'tint')
             .onChange((v) => uniforms.uTint.value.set(v))
+        pf.add(world.particles, 'cometStrength', 0, 1.5, 0.05).name('comet')
     }
 }
