@@ -16,7 +16,8 @@ export default class PostProcessing {
 
         this.composer = new EffectComposer(renderer)
         this.composer.setSize(sizes.width, sizes.height)
-        this.composer.setPixelRatio(sizes.pixelRatio)
+        // Bloom is resolution-hungry and visually soft — DPR above 1.5 buys nothing.
+        this.composer.setPixelRatio(Math.min(sizes.pixelRatio, 1.5))
 
         this.composer.addPass(new RenderPass(scene, camera))
 
@@ -34,7 +35,7 @@ export default class PostProcessing {
     resize() {
         if (!this.enabled) return
         this.composer.setSize(this.experience.sizes.width, this.experience.sizes.height)
-        this.composer.setPixelRatio(this.experience.sizes.pixelRatio)
+        this.composer.setPixelRatio(Math.min(this.experience.sizes.pixelRatio, 1.5))
     }
 
     render() {
