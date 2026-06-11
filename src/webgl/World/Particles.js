@@ -1,162 +1,136 @@
 import * as THREE from 'three'
 import { isMobile } from '../capabilities.js'
+import { buildDiamondPoints, buildScatter } from './diamondPoints.js'
 
 // Gold dust that doubles as the hero object. Each particle has two homes: a scattered
-// ambient position (hero dust field) and a target point on the SURFACE of a round
-// brilliant-cut diamond. Scroll lerps the cloud scatter -> diamond, so the dust literally
-// assembles into a glittering diamond made of light (no solid mesh → no cheap low-poly
-// look, and no transmission needed).
+// ambient position (hero dust field) and a target point on a round brilliant-cut diamond
+// (faces + a brighter facet-edge wireframe). The whole morph lives in the vertex shader:
+// scroll drives a single uProgress uniform, each particle departs at its own aDelay
+// (staggered swarm), twinkles with its own aPhase and carries its own palette color.
 export default class Particles {
     constructor(experience) {
         this.experience = experience
         this.scene = experience.scene
         // Lighter particle budget on phones (fits the smaller diamond + saves the GPU).
         this.count = isMobile() ? 3800 : 6300
-        this.baseSize = 0.13
-        this.progress = 0
-
-        this.scatter = this.generateScatter()
-        this.diamond = this.generateDiamondSurface()
+        // Diamond sized + vertically centered to fit the viewport whole at assembly time.
+        this.diamondSize = 1.8
 
         this.setGeometry()
         this.setMaterial()
         this.setPoints()
     }
 
-    generateScatter() {
-        const a = new Float32Array(this.count * 3)
-        for (let i = 0; i < this.count * 3; i++) a[i] = (Math.random() - 0.5) * 26
-        return a
-    }
-
-    // Area-weighted sample of points across a round brilliant-cut diamond surface (16-fold:
-    // table + two crown facet rings + girdle + two pavilion rings to a culet).
-    generateDiamondSurface() {
-        const N = 16
-        const S = 2.4 // overall diamond size
-        const TWO_PI = Math.PI * 2
-        const V = []
-        const ring = (r, y) => {
-            const start = V.length
-            for (let i = 0; i < N; i++) {
-                const a = (i / N) * TWO_PI
-                V.push(new THREE.Vector3(Math.cos(a) * r * S, y * S, Math.sin(a) * r * S))
-            }
-            return start
-        }
-        const tableC = V.length; V.push(new THREE.Vector3(0, 0.42 * S, 0))
-        const T = ring(0.50, 0.42)
-        const B = ring(0.80, 0.24)
-        const G = ring(1.00, 0.00)
-        const P = ring(0.55, -0.45)
-        const culet = V.length; V.push(new THREE.Vector3(0, -0.95 * S, 0))
-
-        const nx = (i) => (i + 1) % N
-        const tris = []
-        const tri = (a, b, c) => tris.push([V[a], V[b], V[c]])
-        for (let i = 0; i < N; i++) tri(tableC, T + i, T + nx(i))
-        const band = (A, Bn) => {
-            for (let i = 0; i < N; i++) {
-                tri(A + i, Bn + i, Bn + nx(i))
-                tri(A + i, Bn + nx(i), A + nx(i))
-            }
-        }
-        band(T, B); band(B, G); band(G, P)
-        for (let i = 0; i < N; i++) tri(P + i, culet, P + nx(i))
-
-        const areas = tris.map(([a, b, c]) => {
-            const ab = new THREE.Vector3().subVectors(b, a)
-            const ac = new THREE.Vector3().subVectors(c, a)
-            return new THREE.Vector3().crossVectors(ab, ac).length() * 0.5
-        })
-        const total = areas.reduce((s, a) => s + a, 0)
-        const cum = []
-        let acc = 0
-        for (const ar of areas) { acc += ar; cum.push(acc / total) }
-
-        const out = new Float32Array(this.count * 3)
-        const edge1 = new THREE.Vector3()
-        const edge2 = new THREE.Vector3()
-        const pt = new THREE.Vector3()
-        for (let i = 0; i < this.count; i++) {
-            const r = Math.random()
-            let t = 0
-            while (t < cum.length - 1 && r > cum[t]) t++
-            const [a, b, c] = tris[t]
-            let u = Math.random(); let v = Math.random()
-            if (u + v > 1) { u = 1 - u; v = 1 - v }
-            edge1.subVectors(b, a)
-            edge2.subVectors(c, a)
-            pt.copy(a).addScaledVector(edge1, u).addScaledVector(edge2, v)
-            const i3 = i * 3
-            out[i3] = pt.x; out[i3 + 1] = pt.y; out[i3 + 2] = pt.z
-        }
-        return out
-    }
-
     setGeometry() {
+        const built = buildDiamondPoints({ count: this.count, size: this.diamondSize })
         this.geometry = new THREE.BufferGeometry()
-        // Live positions start at the scattered field (copy — we mutate it each frame).
-        this.geometry.setAttribute('position', new THREE.BufferAttribute(this.scatter.slice(), 3))
-    }
-
-    // Procedural soft circle (radial gradient) → round particles instead of squares.
-    createCircleTexture() {
-        const size = 64
-        const canvas = document.createElement('canvas')
-        canvas.width = size
-        canvas.height = size
-        const ctx = canvas.getContext('2d')
-        const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-        g.addColorStop(0, 'rgba(255,255,255,1)')
-        g.addColorStop(0.4, 'rgba(255,255,255,0.6)')
-        g.addColorStop(1, 'rgba(255,255,255,0)')
-        ctx.fillStyle = g
-        ctx.fillRect(0, 0, size, size)
-        const texture = new THREE.CanvasTexture(canvas)
-        texture.colorSpace = THREE.SRGBColorSpace
-        return texture
+        this.geometry.setAttribute('position', new THREE.BufferAttribute(buildScatter({ count: this.count, spread: 26 }), 3))
+        this.geometry.setAttribute('aTarget', new THREE.BufferAttribute(built.targets, 3))
+        this.geometry.setAttribute('aColor', new THREE.BufferAttribute(built.colors, 3))
+        this.geometry.setAttribute('aScale', new THREE.BufferAttribute(built.scales, 1))
+        this.geometry.setAttribute('aPhase', new THREE.BufferAttribute(built.phases, 1))
+        this.geometry.setAttribute('aDelay', new THREE.BufferAttribute(built.delays, 1))
     }
 
     setMaterial() {
-        this.material = new THREE.PointsMaterial({
-            color: '#F1D78A',
-            map: this.createCircleTexture(),
-            size: this.baseSize,
-            sizeAttenuation: true,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
+        this.material = new THREE.ShaderMaterial({
+            uniforms: {
+                uProgress: { value: 0 },
+                uTime: { value: 0 },
+                uSize: { value: 0.16 },
+                uFit: { value: 1 },
+                uScaleH: { value: 450 },
+                uOpacity: { value: 0.7 },
+                uTint: { value: new THREE.Color('#ffffff') }
+            },
+            vertexShader: /* glsl */ `
+                attribute vec3 aTarget;
+                attribute vec3 aColor;
+                attribute float aScale;
+                attribute float aPhase;
+                attribute float aDelay;
+
+                uniform float uProgress;
+                uniform float uTime;
+                uniform float uSize;
+                uniform float uFit;
+                uniform float uScaleH;
+
+                varying vec3 vColor;
+                varying float vFog;
+
+                void main() {
+                    // Staggered assembly: each particle departs at its own delay; the
+                    // smoothstep window doubles as per-particle easing. All home by 1.0.
+                    float p = smoothstep(aDelay, aDelay + 0.35, uProgress);
+                    vec3 pos = mix(position, aTarget * uFit, p);
+
+                    // Ambient drift for the hero dust, fading out so facets stay crisp.
+                    pos += vec3(
+                        sin(uTime * 0.32 + aPhase * 6.2832),
+                        cos(uTime * 0.27 + aPhase * 12.566),
+                        sin(uTime * 0.21 + aPhase * 9.4248)
+                    ) * 0.35 * (1.0 - p);
+
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_Position = projectionMatrix * mvPosition;
+
+                    // Per-particle twinkle (own speed + phase) replaces the old global pulse.
+                    float twinkle = 0.72 + 0.28 * sin(uTime * (1.6 + aPhase * 1.2) + aPhase * 6.2832);
+                    // Narrow screens shrink the diamond (uFit) — shrink sparks with it,
+                    // partially, so the small diamond keeps a fine grain instead of chunky dots.
+                    gl_PointSize = uSize * aScale * twinkle * (0.7 + 0.3 * uFit) * (uScaleH / -mvPosition.z);
+
+                    vColor = aColor;
+                    // Matches the scene fog (#050505, 10..50) the old PointsMaterial used.
+                    vFog = smoothstep(10.0, 50.0, -mvPosition.z);
+                }
+            `,
+            fragmentShader: /* glsl */ `
+                uniform float uOpacity;
+                uniform vec3 uTint;
+
+                varying vec3 vColor;
+                varying float vFog;
+
+                void main() {
+                    // Procedural soft round sprite (bright core, feathered halo).
+                    float d = distance(gl_PointCoord, vec2(0.5));
+                    float alpha = smoothstep(0.5, 0.08, d);
+                    alpha *= alpha;
+                    gl_FragColor = vec4(vColor * uTint * (1.0 - vFog), alpha * uOpacity);
+                    #include <tonemapping_fragment>
+                    #include <colorspace_fragment>
+                }
+            `,
             transparent: true,
-            opacity: 0.7
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
         })
     }
 
     setPoints() {
         this.points = new THREE.Points(this.geometry, this.material)
+        // Scatter spans ±13 while the camera sits at z≈6 — keep the cloud unculled.
+        this.points.frustumCulled = false
         this.scene.add(this.points)
     }
 
     // Driven by the scroll timeline (0 = scattered dust, 1 = assembled diamond).
     setProgress(p) {
-        this.progress = p
+        this.material.uniforms.uProgress.value = p
     }
 
     update(elapsedTime) {
-        // Lerp every particle scatter -> diamond by an eased progress (smoothstep).
-        const p = this.progress
-        const e = p * p * (3 - 2 * p)
-        // Responsive fit: a wide diamond overflows narrow / portrait screens, so shrink the
-        // diamond target on low aspect ratios (the ambient scatter field is left full-bleed).
-        const aspect = this.experience.sizes.width / this.experience.sizes.height
-        const fit = Math.min(1, Math.max(0.42, aspect / 1.15))
-        const pos = this.geometry.attributes.position.array
-        const s = this.scatter
-        const d = this.diamond
-        for (let i = 0; i < pos.length; i++) pos[i] = s[i] + (d[i] * fit - s[i]) * e
-        this.geometry.attributes.position.needsUpdate = true
+        const { width, height, pixelRatio } = this.experience.sizes
+        // Responsive fit: shrink the diamond target on narrow / portrait aspects
+        // (the ambient scatter field is left full-bleed).
+        this.material.uniforms.uFit.value = Math.min(1, Math.max(0.42, (width / height) / 1.15))
+        // Point size attenuation works in device pixels.
+        this.material.uniforms.uScaleH.value = height * 0.5 * pixelRatio
+        this.material.uniforms.uTime.value = elapsedTime
 
-        // Slow rotation (ambient drift / shows the assembled diamond in 3D) + size shimmer.
+        // Slow rotation: ambient drift in the hero, shows the assembled diamond in 3D.
         this.points.rotation.y = elapsedTime * 0.06
-        this.material.size = this.baseSize + Math.sin(elapsedTime * 2) * 0.025
     }
 }

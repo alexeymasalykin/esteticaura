@@ -24,9 +24,10 @@ export default class Debug {
         }
 
         const pf = gui.addFolder('Dust')
-        pf.add(world.particles.material, 'opacity', 0, 1, 0.01)
-        pf.add(world.particles, 'baseSize', 0.05, 0.4, 0.005).name('size')
-        pf.addColor({ color: '#' + world.particles.material.color.getHexString() }, 'color')
-            .onChange((v) => world.particles.material.color.set(v))
+        const uniforms = world.particles.material.uniforms
+        pf.add(uniforms.uOpacity, 'value', 0, 1, 0.01).name('opacity')
+        pf.add(uniforms.uSize, 'value', 0.05, 0.4, 0.005).name('size')
+        pf.addColor({ tint: '#' + uniforms.uTint.value.getHexString() }, 'tint')
+            .onChange((v) => uniforms.uTint.value.set(v))
     }
 }
