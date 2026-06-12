@@ -85,7 +85,21 @@ Env: `RoomEnvironment` + `PMREMGenerator` (без HDRI-файлов). Bloom: `Re
   ACES на мобиле (без композера). Дополнительно: `uBoost` уравнивает плотность блёсток десктопа
   с мобильным видом; **кометный шлейф за курсором** (пыль стягивается к лучу курсора во
   view-space, голова/ленивый хвост; только `pointer: fine`, только в состоянии пыли; сила —
-  в `#debug` → Dust/comet). Отвергнуто заказчиком: «осколки стекла» (жёсткие ромбы) — ретро-вид.
+  в `#debug` → Dust/comet). Отвергнуто заказчиком: «осколки стекла» (жёсткие ромбы) — ретро-вид,
+  и «звёздочки-блики» (4-лучевые кресты) — визуальный шум.
+- **Визуальная полировка (2026-06-12)** ✅ (план `docs/superpowers/plans/2026-06-12-luba-visual-polish.md`):
+  **UI-motion** — scroll-reveal секций (`Reveal.js`, IO + `.reveal/.is-in`, stagger 90ms/кап 360ms,
+  классы вешает только JS, reduced-motion гейтится в JS и CSS), hero-интро после прелоадера
+  (`HeroIntro.js`, слова из-под overflow-масок; градиент text-fill ПЕРЕНЕСЁН на `.hero__word-inner` —
+  `background-clip:text` не красит сквозь overflow-обёртки), shine sweep на `.btn`.
+  **3D** — `uBreath` (пульс ±1.5% только diamond-таргета в шейдере, без конфликта с GSAP-scale),
+  тилт rotation.x/z к курсору + прецессия (вес = uProgress), пыльца акта 3 (`uShed`, ~7% частиц,
+  sawtooth-падение с fade). **Перф** — self-hosted вариативные шрифты (4 woff2 сабсета
+  latin+cyrillic в `public/fonts/`, preload двух критичных, Google Fonts удалён из index.html),
+  адаптивный DPR (`adaptiveDpr.js`: окно 60 кадров, шаги 2→1.5→1.25→1 при <45fps, спайк-фильтр
+  0.5s — НЕ ниже, иначе сверхмедленные GPU не измеряются). **Атмосфера** — зерно `.scene-grain`
+  (под контентом, скрыто в poster/reduced-motion), виньетка на `.scene-scrim::after` (НЕ внутри
+  grain — opacity притушит), скролл-прогресс (`ScrollProgress.js`, rAF + transform).
 
 Планы B/C/D пишутся ПОСЛЕ завершения и проверки предыдущей фазы (детали опираются на факт).
 На этапе кода — обязательный gate `ui-ux-pro-max` (контраст, a11y, touch).
@@ -100,7 +114,7 @@ Env: `RoomEnvironment` + `PMREMGenerator` (без HDRI-файлов). Bloom: `Re
 **Все фазы A–D завершены и приняты.** Лендинг функционально готов: рабочая сборка, дизайн-система
 золото-нуар, 8 RU-секций без inline-стилей, форма с blur-валидацией → Telegram, бургер, слайдер
 до/после, 3D «бриллиант из пыли», динамический импорт + постер-деградация. `npm run build` зелёный
-(main 31kB gzip + ленивый Three.js), Vitest **26 тестов** зелёные, gate `ui-ux-pro-max` пройден.
+(main ~32kB gzip + ленивый Three.js), Vitest **42 теста** зелёные, gate `ui-ux-pro-max` пройден.
 
 ### Инструмент визуальной проверки 3D
 Playwright стоит `--no-save` (в `node_modules`, не в `package.json`). Скрипты скриншотов —
