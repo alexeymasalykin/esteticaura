@@ -50,6 +50,7 @@ export default class Particles {
                 uFit: { value: 1 },
                 uScaleH: { value: 450 },
                 uBoost: { value: 1 },
+                uBreath: { value: 1 },
                 uOpacity: { value: 0.7 },
                 uTint: { value: new THREE.Color('#ffffff') },
                 uPointer: { value: new THREE.Vector2() },
@@ -69,6 +70,7 @@ export default class Particles {
                 uniform float uFit;
                 uniform float uScaleH;
                 uniform float uBoost;
+                uniform float uBreath;
                 uniform vec2 uPointer;
                 uniform vec2 uTrail;
                 uniform float uComet;
@@ -81,7 +83,9 @@ export default class Particles {
                     // Staggered assembly: each particle departs at its own delay; the
                     // smoothstep window doubles as per-particle easing. All home by 1.0.
                     float p = smoothstep(aDelay, aDelay + 0.35, uProgress);
-                    vec3 pos = mix(position, aTarget * uFit, p);
+                    // uBreath: slow ±1.5% pulse of the assembled diamond only (scatter
+                    // and the GSAP-driven object scale stay untouched).
+                    vec3 pos = mix(position, aTarget * uFit * uBreath, p);
 
                     // Ambient drift for the hero dust, fading out so facets stay crisp.
                     pos += vec3(
@@ -183,6 +187,17 @@ export default class Particles {
 
         // Slow rotation: ambient drift in the hero, shows the assembled diamond in 3D.
         this.points.rotation.y = elapsedTime * 0.06
+
+        // Assembled-state life: breathing pulse (~4s), slow axis precession, and a
+        // light tilt toward the cursor — the diamond follows the viewer like a piece
+        // on a counter. All weighted by morph progress so the dust stays untouched.
+        const progress = this.material.uniforms.uProgress.value
+        this.material.uniforms.uBreath.value = 1 + 0.015 * Math.sin(elapsedTime * 1.6) * progress
+        const { cursor } = this.experience
+        const tiltX = (cursor.y * 0.12 + Math.sin(elapsedTime * 0.21) * 0.025) * progress
+        const tiltZ = (-cursor.x * 0.08 + Math.cos(elapsedTime * 0.17) * 0.02) * progress
+        this.points.rotation.x += (tiltX - this.points.rotation.x) * 0.04
+        this.points.rotation.z += (tiltZ - this.points.rotation.z) * 0.04
     }
 
     // Smoothed cursor head + lagging tail as view-space ray tangents (xy per unit
