@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import World from './World/World.js'
 import PostProcessing from './PostProcessing.js'
 import Debug from './Debug.js'
+import { nextPixelRatio } from './adaptiveDpr.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -14,11 +15,15 @@ export default class Experience {
         this.ready = false
         this.paused = false
 
+        // dprCap shrinks when the GPU can't hold ~45fps (adaptive resolution).
+        this.dprCap = 2
         this.sizes = {
             width: window.innerWidth,
             height: window.innerHeight,
-            pixelRatio: Math.min(window.devicePixelRatio, 2)
+            pixelRatio: Math.min(window.devicePixelRatio, this.dprCap)
         }
+        this.frameSamples = []
+        this.framesSeen = 0
 
         this.scene = new THREE.Scene()
         this.scene.background = new THREE.Color('#050505')
@@ -75,7 +80,7 @@ export default class Experience {
     resize() {
         this.sizes.width = window.innerWidth
         this.sizes.height = window.innerHeight
-        this.sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
+        this.sizes.pixelRatio = Math.min(window.devicePixelRatio, this.dprCap)
 
         this.camera.aspect = this.sizes.width / this.sizes.height
         this.camera.updateProjectionMatrix()
@@ -89,6 +94,7 @@ export default class Experience {
     tick() {
         if (this.paused) return
         const elapsedTime = this.clock.getElapsedTime()
+        this.sampleFrame(elapsedTime)
 
         if (this.world) {
             this.world.update(elapsedTime)
@@ -105,5 +111,30 @@ export default class Experience {
             this.renderer.render(this.scene, this.camera)
         }
         window.requestAnimationFrame(() => this.tick())
+    }
+
+    // Adaptive resolution: average the frame time over 60-frame windows (after a
+    // 30-frame warmup, ignoring tab-switch spikes) and step the DPR cap down while
+    // the GPU can't hold ~45fps.
+    sampleFrame(elapsedTime) {
+        const dt = elapsedTime - (this.prevTime ?? elapsedTime)
+        this.prevTime = elapsedTime
+        this.framesSeen++
+        // 0.5s cutoff: rejects tab-switch gaps but keeps frames from very slow GPUs
+        // (2fps) — the devices that need the downscale most.
+        if (this.framesSeen <= 30 || dt <= 0 || dt > 0.5) return
+
+        this.frameSamples.push(dt * 1000)
+        if (this.frameSamples.length < 60) return
+
+        const avg = this.frameSamples.reduce((s, v) => s + v, 0) / this.frameSamples.length
+        this.frameSamples.length = 0
+        const next = nextPixelRatio(this.sizes.pixelRatio, avg)
+        if (next) {
+            this.dprCap = next
+            this.sizes.pixelRatio = Math.min(window.devicePixelRatio, next)
+            this.renderer.setPixelRatio(this.sizes.pixelRatio)
+            if (this.postProcessing) this.postProcessing.resize()
+        }
     }
 }
