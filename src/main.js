@@ -4,6 +4,8 @@ import Preloader from './ui/Preloader.js'
 import Nav from './ui/Nav.js'
 import BookingForm from './ui/BookingForm.js'
 import BeforeAfter from './ui/BeforeAfter.js'
+import Reveal from './ui/Reveal.js'
+import HeroIntro from './ui/HeroIntro.js'
 import { shouldRender3D } from './webgl/capabilities.js'
 
 // UI is lightweight — always on.
@@ -12,6 +14,8 @@ new Nav()
 new BookingForm()
 new BeforeAfter()
 new Preloader()
+new Reveal()
+new HeroIntro()
 
 if (shouldRender3D()) {
     // Load the heavy Three.js scene only AFTER the first paint, so the hero shows instantly

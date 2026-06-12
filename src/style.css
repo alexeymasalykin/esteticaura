@@ -119,6 +119,8 @@ a {
 
 /* ===== Buttons — две иерархии ===== */
 .btn {
+    position: relative;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -139,6 +141,24 @@ a {
                 background var(--dur) var(--ease-out),
                 color var(--dur) var(--ease-out);
 }
+
+/* One shine sweep across the gold fill on hover (compositor-only transform). */
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 45%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, .5), transparent);
+    transform: translateX(-140%) skewX(-18deg);
+    transition: transform .55s var(--ease-out);
+    pointer-events: none;
+}
+
+.btn:hover::after { transform: translateX(320%) skewX(-18deg); }
+.btn--ghost::after,
+.btn:disabled::after { display: none; }
 
 .btn:hover {
     transform: translateY(-2px);
@@ -175,6 +195,18 @@ a {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
 
+/* ===== Scroll reveal (классы вешает JS — без JS контент виден сразу) ===== */
+.reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity .65s var(--ease-out), transform .65s var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in {
+    opacity: 1;
+    transform: none;
+}
+
 /* ===== Reduced motion (CSS-уровень; JS/3D-гейтинг — Фаза D) ===== */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -184,6 +216,12 @@ a {
         animation-duration: .001ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: var(--dur-fast) !important; /* hover-переходы остаются короткими */
+    }
+    /* Страховка: даже если .reveal навесился — контент видим без хореографии. */
+    .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
 
@@ -292,6 +330,13 @@ a {
     font-size: var(--fs-display);
     text-transform: uppercase;
     letter-spacing: .08em;
+}
+
+/* Gradient fill lives on whichever element directly holds the text: the h1 itself,
+   or the word-inner spans after the intro split (background-clip:text does not paint
+   through descendants with overflow clips). */
+.hero__title,
+.hero__word-inner {
     background: linear-gradient(to right, var(--gold-light), var(--gold), var(--gold-light));
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -319,8 +364,20 @@ a {
     to { background-position: 200% center; }
 }
 
+/* Hero intro masks: words slide up from under their own overflow clip (JS-built;
+   the gradient text-fill lives on the h1 and shows through the transparent spans). */
+.hero__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    padding-bottom: 0.08em; /* keep glyph tails inside the clip */
+    margin-bottom: -0.08em;
+}
+.hero__word-inner { display: inline-block; }
+
 @media (prefers-reduced-motion: reduce) {
-    .hero__title { animation: none; }
+    .hero__title,
+    .hero__word-inner { animation: none; }
 }
 
 /* ===== About + meta row ===== */
