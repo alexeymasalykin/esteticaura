@@ -51,6 +51,7 @@ export default class Particles {
                 uScaleH: { value: 450 },
                 uBoost: { value: 1 },
                 uBreath: { value: 1 },
+                uShed: { value: 0 },
                 uOpacity: { value: 0.7 },
                 uTint: { value: new THREE.Color('#ffffff') },
                 uPointer: { value: new THREE.Vector2() },
@@ -71,6 +72,7 @@ export default class Particles {
                 uniform float uScaleH;
                 uniform float uBoost;
                 uniform float uBreath;
+                uniform float uShed;
                 uniform vec2 uPointer;
                 uniform vec2 uTrail;
                 uniform float uComet;
@@ -78,6 +80,7 @@ export default class Particles {
                 varying vec3 vColor;
                 varying float vFog;
                 varying float vGlow;
+                varying float vShedFade;
 
                 void main() {
                     // Staggered assembly: each particle departs at its own delay; the
@@ -86,6 +89,17 @@ export default class Particles {
                     // uBreath: slow ±1.5% pulse of the assembled diamond only (scatter
                     // and the GSAP-driven object scale stay untouched).
                     vec3 pos = mix(position, aTarget * uFit * uBreath, p);
+
+                    // Act-3 pollen: ~7% of the assembled sparks loosen, sink below the
+                    // diamond and fade out, looping (sawtooth) while uShed is up.
+                    vShedFade = 1.0;
+                    float shed = uShed * step(0.93, aPhase) * p;
+                    if (shed > 0.0) {
+                        float fall = fract(uTime * (0.10 + aPhase * 0.06) + aPhase * 13.7);
+                        pos.y -= fall * 1.8 * shed;
+                        pos.x += sin(uTime * 0.6 + aPhase * 31.0) * 0.1 * fall * shed;
+                        vShedFade = 1.0 - fall * shed;
+                    }
 
                     // Ambient drift for the hero dust, fading out so facets stay crisp.
                     pos += vec3(
@@ -140,14 +154,16 @@ export default class Particles {
                 varying vec3 vColor;
                 varying float vFog;
                 varying float vGlow;
+                varying float vShedFade;
 
                 void main() {
                     // Procedural soft round sprite (bright core, feathered halo).
                     float d = distance(gl_PointCoord, vec2(0.5));
                     float alpha = smoothstep(0.5, 0.08, d);
                     alpha *= alpha;
-                    // Comet-gathered sparks burn brighter.
-                    gl_FragColor = vec4(vColor * uTint * (1.0 + vGlow * 1.5) * (1.0 - vFog), alpha * uOpacity);
+                    // Comet-gathered sparks burn brighter; shed pollen fades as it falls.
+                    gl_FragColor = vec4(vColor * uTint * (1.0 + vGlow * 1.5) * (1.0 - vFog),
+                        alpha * uOpacity * vShedFade);
                     #include <tonemapping_fragment>
                     #include <colorspace_fragment>
                 }

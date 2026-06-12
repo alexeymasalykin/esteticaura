@@ -70,6 +70,8 @@ export default class World {
         tl.to(this.particles.points.position, { x: 1.9, y: 0.7, duration: 0.9, ease: 'power1.inOut' }, 1.8)
         tl.to(this.particles.points.scale, { x: 0.55, y: 0.55, z: 0.55, duration: 0.9, ease: 'power1.inOut' }, 1.8)
         tl.to(uniforms.uOpacity, { value: 0.32, duration: 0.75 }, 1.95)
+        // A thin stream of pollen sheds off the departing diamond (scrub-reversible).
+        tl.to(uniforms.uShed, { value: 1, duration: 0.6 }, 1.9)
 
         // Gentle camera dolly OUT across the whole page (dolly-in cropped the diamond).
         tl.to(this.experience.camera.position, { z: 6.8, duration: 3 }, 0)
