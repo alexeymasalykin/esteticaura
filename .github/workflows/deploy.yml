@@ -21,7 +21,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # npm 10 (node 20) treats vitest's optional-peer esbuild differently and
+          # rejects the lockfile; node 24 ships npm 11 — same as the lockfile author.
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm test
